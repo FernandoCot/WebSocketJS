@@ -6,21 +6,29 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-const onConnect = (info) => {
-  console.log(info);
+let connectedList = [
+  {
+    id: 1,
+    name: 'Test'
+  }
+];
+
+const onConnect = (connectionInfo) => {
+  connectedList.push(connectionInfo);
 }
 
-const onDisconnect = (info) => {
-  console.log(info);
+const onDisconnect = (connectionInfo) => {
+  connectedList = connectedList.filter((item) => item.id != connectionInfo.id);
 }
 
 const listAllConnected = () => {
-  return [];
+  return connectedList;
 }
 
-io.on('connection', (info) => {
-  onConnect(info);
-  // onDisconnect(info);
+io.on('connect', (connectionInfo) => {
+  onConnect(connectionInfo);
+  socket.on("listAll", () => listAllConnected());
+  socket.on("disconnect", () => onDisconnect(connectionInfo));
 });
 
 const PORT = process.env.PORT || 3000
