@@ -27,8 +27,8 @@ const listAllConnected = () => {
 
 io.on('connect', (connectionInfo) => {
   onConnect(connectionInfo);
-  socket.on("listAll", () => listAllConnected());
-  socket.on("disconnect", () => onDisconnect(connectionInfo));
+  connectionInfo.on("listAll", () => listAllConnected());
+  connectionInfo.on("disconnect", () => onDisconnect(connectionInfo));
 });
 
 const PORT = process.env.PORT || 3000
