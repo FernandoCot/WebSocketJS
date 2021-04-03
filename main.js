@@ -13,11 +13,11 @@ let connectedList = [
   }
 ];
 
-const onConnect = (connectionInfo) => {
+const onUserConnect = (connectionInfo) => {
   connectedList.push(connectionInfo);
 }
 
-const onDisconnect = (connectionInfo) => {
+const onUserDisconnect = (connectionInfo) => {
   connectedList = connectedList.filter((item) => item.id != connectionInfo.id);
 }
 
@@ -25,10 +25,19 @@ const listAllConnected = () => {
   return connectedList;
 }
 
-io.on('connect', (connectionInfo) => {
-  onConnect(connectionInfo);
-  connectionInfo.on("listAll", () => listAllConnected());
-  connectionInfo.on("disconnect", () => onDisconnect(connectionInfo));
+io.on('connection', (connectionInfo) => {
+  onUserConnect(connectionInfo);
+  connectionInfo.broadcast.emit('userJoined', `User connected: ${connectionInfo.name}`);
+
+  connectionInfo.on("listAll", () => {
+    listAllConnected();
+    connectionInfo.emit('allConnectedUsers', connectedList);
+  });
+
+  connectionInfo.on("disconnect", () => {
+    onUserDisconnect(connectionInfo);
+    connectionInfo.broadcast.emit('userLeft', `User disconnected: ${connectionInfo.name}`);
+  });
 });
 
 const PORT = process.env.PORT || 3000
